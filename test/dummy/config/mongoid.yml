@@ -14,6 +14,7 @@ development:
         consistency: :strong
   # Configure Mongoid specific options. (optional)
   options:
+    raise_not_found_error: false
 test:
   sessions:
     default:
@@ -23,3 +24,5 @@ test:
       options:
         consistency: :strong
         raise_not_found_error: true
+  options:
+    raise_not_found_error: false

@@ -1,0 +1,10 @@
+%h1 Import file
+
+= form_tag import_file_imports_path, multipart: true do
+  = file_field_tag :file
+  %br
+  - @available_object_definitions.each do |obj|
+    = label_tag "type", obj.to_s
+    = radio_button_tag "object_definition", obj.to_s, false
+  %br
+  = submit_tag "Import"
