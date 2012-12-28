@@ -11,18 +11,29 @@ module ImporterExtension
     
     SPREADSHEET_FILE_EXTS = [".csv", ".xls", ".xlsx"]
     
-    def import(file, klazz)
+    # Imports the file.
+    def import(file, klazz, options={})
       self.object_definition_name = klazz.to_s
+
+      if options[:is_google_spreadsheet]
+        filename = file
+      else
+        filename = file.original_filename if file.respond_to?(:original_filename)
+      end
       
-      if SPREADSHEET_FILE_EXTS.include?(File.extname(file.original_filename))
-        import_spreadsheet(file, klazz)
+      if SPREADSHEET_FILE_EXTS.include?(File.extname(filename)) || options[:is_google_spreadsheet]
+        import_spreadsheet(file, klazz, options)
         return true
       else
         import_text_file(file, klazz)
         return true
       end
+      
+      false
     end
     
+  protected 
+  
     def open_spreadsheet(file)
       case File.extname(file.original_filename)
       when ".csv" then Csv.new(file.path, nil, :ignore)
@@ -31,14 +42,19 @@ module ImporterExtension
       else raise "unknown file type: #{file.original_filename}"
       end
     end
-    
-  protected 
+  
     def import_text_file(file, klazz)
       Rails.logger.info "Importing regular file"
     end
     
-    def import_spreadsheet(file, klazz)
-      spreadsheet = open_spreadsheet(file)
+    def import_spreadsheet(file, klazz, options={})
+      if options[:is_google_spreadsheet]
+        ENV["GOOGLE_EMAIL"] = options[:google_email]
+        ENV["GOOGLE_PASSWORD"] = options[:google_password]
+        spreadsheet = Google.new(file)
+      else
+        spreadsheet = open_spreadsheet(file)
+      end
       header = spreadsheet.row(1)
       (2..spreadsheet.last_row).each do |i|
         row = Hash[[header, spreadsheet.row(i)].transpose]

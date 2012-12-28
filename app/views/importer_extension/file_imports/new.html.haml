@@ -1,7 +1,20 @@
+= stylesheet_link_tag 'admin'
+= javascript_include_tag 'admin'
+= csrf_meta_tags
+
 %h1 Import file
 
 = form_tag import_file_imports_path, multipart: true do
   = file_field_tag :file
+  %br
+  = label_tag "Google spreadsheet key"
+  = text_field_tag "google_spreadsheet_key"
+  %br
+  = label_tag "Username"
+  = text_field_tag "google_email"
+  %br
+  = label_tag "Password"
+  = password_field_tag "google_password"
   %br
   - @available_object_definitions.each do |obj|
     = label_tag "type", obj.to_s
