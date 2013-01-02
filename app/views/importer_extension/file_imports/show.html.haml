@@ -2,4 +2,6 @@
 = javascript_include_tag 'admin'
 = csrf_meta_tags
 
-= link_to "Import file", new_file_import_path
+%h1 Saved #{@file_import.imported_objects.count} objects
+
+

@@ -4,8 +4,13 @@
 
 %h1 Import file
 
+.notice
+  = flash[:notice]
+  
 = form_tag import_file_imports_path, multipart: true do
   = file_field_tag :file
+  %br
+  = render partial: 'xml'
   %br
   = label_tag "Google spreadsheet key"
   = text_field_tag "google_spreadsheet_key"
