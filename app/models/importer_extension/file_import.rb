@@ -4,6 +4,7 @@ module ImporterExtension
     include Mongoid::Document
     include Mongoid::Timestamps
     
+    EXTENSION_REGEX = /__.*_perform/
     attr_accessible :file_type, :name
 
     field :object_definition_name, type: String
@@ -67,8 +68,7 @@ module ImporterExtension
         obj = klazz.find(:id => row["id"])
         obj = klazz.new if obj.blank?
         obj.attributes = row.to_hash.slice(*klazz.accessible_attributes)
-        # TODO: need to have it not invoke callbacks
-        obj.save!
+        save_object_without_callbacks(obj)
         self.imported_objects << ::ImporterExtension::ImportedObject.new(imported_object_definition_id: obj.id)
         count += 1
       end
@@ -88,7 +88,7 @@ module ImporterExtension
         obj = klazz.find(:id => attributes["id"])
         obj = klazz.new if obj.blank?
         obj.attributes = attributes.slice(*klazz.accessible_attributes)
-        obj.save!
+        save_object_without_callbacks(obj)
         self.imported_objects << ::ImporterExtension::ImportedObject.new(imported_object_definition_id: obj.id)
         count += 1
       end
@@ -96,5 +96,26 @@ module ImporterExtension
       count
     end
     
+    def save_object_without_callbacks(obj)
+      # ActiveRecord ORM should respond to this
+      if obj.class.respond_to?(:skip_callback)        
+        # Find callbacks
+        ["save", "create", "update"].each do |callback_type|
+          callbacks = obj.class.send("_#{callback_type}_callbacks").select{|callback| callback.kind.eql?(:after) }
+          #reapply_callbacks[callback_type] = []
+          callbacks.each do |callback|
+            next unless callback.filter.to_s.match(EXTENSION_REGEX)
+            Rails.logger.debug "Skip callback: #{callback.filter}"
+            obj.define_singleton_method(callback.filter) { p "Not doing anything..."}
+          end
+        end
+        # Finally save the object
+        obj.save!
+        
+      else
+        # Assume that we're dealing with Datamapper ORM
+        obj.save!
+      end
+    end
   end
 end
