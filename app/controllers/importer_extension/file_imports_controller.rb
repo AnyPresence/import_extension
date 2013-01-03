@@ -12,6 +12,14 @@ module ImporterExtension
        @file_import = ::ImporterExtension::FileImport.find(params[:id])
     end
     
+    def check_file
+      if File.extname(params[:file]) == ".xml"
+        render 'xml' 
+      else
+        render :nothing => true
+      end
+    end
+    
     def import
       klazz = params[:object_definition].to_s
       flash[:notice] = "Please select an object definition"

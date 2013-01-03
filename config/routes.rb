@@ -2,6 +2,9 @@ ImporterExtension::Engine.routes.draw do
   get 'settings' => 'file_imports#new'
    
   resources :file_imports do
-    collection { post :import }
+    collection { 
+      post :import 
+      post :check_file
+    }
   end
 end
