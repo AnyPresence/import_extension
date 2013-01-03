@@ -20,6 +20,8 @@ Gem::Specification.new do |s|
   s.add_dependency "roo"
   s.add_dependency "mongoid", "~> 3.0.6"
   s.add_dependency "nokogiri"
+  s.add_dependency "resque"
+  s.add_dependency "redis"
 
   s.add_development_dependency "debugger"
   s.add_development_dependency "database_cleaner"

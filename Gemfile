@@ -16,6 +16,9 @@ gem 'simple_form', '2.0.4'
 gem 'sass-rails', '3.2.5'
 gem 'compass-rails', '1.0.3'
 gem 'nokogiri'
+gem 'mocha', "~> 0.12.3", :require => false
+gem "resque"
+gem "redis"
 
 # Declare any dependencies that are still in development here instead of in
 # your gemspec. These might include edge Rails or gems from your path or

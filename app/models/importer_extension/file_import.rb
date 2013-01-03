@@ -5,8 +5,11 @@ module ImporterExtension
     include Mongoid::Timestamps
     
     EXTENSION_REGEX = /__.*_perform/
-    attr_accessible :file_type, :name
 
+    attr_accessible :file_type, :filename, :name
+
+    field :file, type: Moped::BSON::Binary
+    field :filename, type: String, default: ""
     field :object_definition_name, type: String
     
     embeds_many :imported_objects, :class_name => "ImporterExtension::ImportedObject"
@@ -17,12 +20,7 @@ module ImporterExtension
     # Imports the file.
     def import(file, klazz, options={})
       self.object_definition_name = klazz.to_s
-
-      if options[:is_google_spreadsheet]
-        filename = file
-      else
-        filename = file.original_filename if file.respond_to?(:original_filename)
-      end
+      options = HashWithIndifferentAccess.new(options)
       
       count = 0
       if SPREADSHEET_FILE_EXTS.include?(File.extname(filename)) || options[:is_google_spreadsheet]
@@ -39,11 +37,11 @@ module ImporterExtension
   protected 
   
     def open_spreadsheet(file)
-      case File.extname(file.original_filename)
+      case File.extname(filename)
       when ".csv" then Csv.new(file.path, nil, :ignore)
       when ".xls" then Excel.new(file.path, nil, :ignore)
       when ".xlsx" then Excelx.new(file.path, nil, :ignore)
-      else raise "unknown file type: #{file.original_filename}"
+      else raise "unknown file type: #{filename}"
       end
     end
   
@@ -56,9 +54,9 @@ module ImporterExtension
     def import_spreadsheet(file, klazz, options={})
       count = 0
       if options[:is_google_spreadsheet]
-        ENV["GOOGLE_EMAIL"] = options[:google_email]
+        ENV["GOOGLE_MAIL"] = options[:google_email]
         ENV["GOOGLE_PASSWORD"] = options[:google_password]
-        spreadsheet = Google.new(file)
+        spreadsheet = Google.new(filename)
       else
         spreadsheet = open_spreadsheet(file)
       end

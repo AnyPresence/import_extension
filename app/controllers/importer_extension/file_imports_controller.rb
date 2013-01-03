@@ -21,14 +21,14 @@ module ImporterExtension
     end
     
     def import
-      klazz = params[:object_definition].to_s
+      klazz_name = params[:object_definition].to_s
       flash[:notice] = "Please select an object definition"
-      if klazz.blank?
+      if klazz_name.blank?
         render action: "new"
         return
       end
       
-      klazz = "#{::AP::ImporterExtension::Importer::Config.instance.latest_version.upcase}::#{klazz}".constantize
+      klazz = "#{::AP::ImporterExtension::Importer::Config.instance.latest_version.upcase}::#{klazz_name}".constantize
     
       options = {}
       options[:is_google_spreadsheet] = true unless params[:google_spreadsheet_key].blank?
@@ -38,12 +38,18 @@ module ImporterExtension
       @file_import = ::ImporterExtension::FileImport.new
       if options[:is_google_spreadsheet]
         file = params[:google_spreadsheet_key]
+        options[:google_email] = params[:google_email]
+        options[:google_password] = params[:google_password]
+        @file_import.filename = file
       else
         file = params[:file]
+        @file_import.file = Moped::BSON::Binary.new(:generic, file.read)
+        @file_import.filename = file.original_filename
       end
-      count = @file_import.import(file, klazz, options)
-      if count > 0
-        @file_import.save
+     
+      if @file_import.save
+        Resque.enqueue(::ImporterExtension::ImporterWorker, {"file_import_id" => @file_import.id, "klazz_name" => klazz.to_s, "options" => options})
+        
         redirect_to @file_import
       else
         render action: "new"
