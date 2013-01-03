@@ -1,8 +1,22 @@
 = stylesheet_link_tag 'admin'
+= stylesheet_link_tag 'importer_extension/bootstrap'
+= stylesheet_link_tag 'importer_extension/bootstrap-responsive'
 = javascript_include_tag 'admin'
 = csrf_meta_tags
 
 %h1 Saving objects...
+.container
+  %meta{:content => "5", "http-equiv" => "refresh"}
+
+  %b= "This page will refresh automatically in 5 seconds."
+  
+  %h2 Processed #{@file_import.processed.to_f}/#{@file_import.total.to_f}
+  .progress.progress-striped.active{style: "width: 50%;"}
+    .bar{style: "width: #{(@file_import.processed.to_f/@file_import.total.to_f)*100 + 1}%;"}
+    
+
+
+
 
 
 

@@ -5,12 +5,15 @@ module ImporterExtension
     include Mongoid::Timestamps
     
     EXTENSION_REGEX = /__.*_perform/
+    HEADER_ROW_START = 1
 
     attr_accessible :file_type, :filename, :name
 
     field :file, type: Moped::BSON::Binary
     field :filename, type: String, default: ""
     field :object_definition_name, type: String
+    field :processed, type: Integer, default: 0
+    field :total, type: Integer
     
     embeds_many :imported_objects, :class_name => "ImporterExtension::ImportedObject"
     
@@ -54,15 +57,23 @@ module ImporterExtension
       else
         spreadsheet = open_spreadsheet(file)
       end
-      header = spreadsheet.row(1)
-      (2..spreadsheet.last_row).each do |i|
+      header = spreadsheet.row(HEADER_ROW_START)
+      
+      self.total = spreadsheet.last_row - HEADER_ROW_START
+      count = 0
+      ((HEADER_ROW_START+1)..spreadsheet.last_row).each do |i|
         row = Hash[[header, spreadsheet.row(i)].transpose]
         obj = klazz.find(:id => row["id"])
         obj = klazz.new if obj.blank?
         obj.attributes = row.to_hash.slice(*klazz.accessible_attributes)
         save_object_without_callbacks(obj)
+        count += 1
+        self.processed = count
+        save if (count % 100) == 0
+        
         self.imported_objects << ::ImporterExtension::ImportedObject.new(imported_object_definition_id: obj.id)
       end
+      save
     end
     
     def import_xml(file, klazz, options={})
