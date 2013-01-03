@@ -22,16 +22,13 @@ module ImporterExtension
       self.object_definition_name = klazz.to_s
       options = HashWithIndifferentAccess.new(options)
       
-      count = 0
       if SPREADSHEET_FILE_EXTS.include?(File.extname(filename)) || options[:is_google_spreadsheet]
-        count = import_spreadsheet(file, klazz, options)
+        import_spreadsheet(file, klazz, options)
       elsif XML_FILE_EXTS.include?(File.extname(filename))
-        count = import_xml(file, klazz, options)
+        import_xml(file, klazz, options)
       else
-        count = import_text_file(file, klazz)
+        import_text_file(file, klazz)
       end
-      
-      count
     end
     
   protected 
@@ -46,13 +43,10 @@ module ImporterExtension
     end
   
     def import_text_file(file, klazz)
-      count = 0
       Rails.logger.info "Importing regular file"
-      count
     end
     
     def import_spreadsheet(file, klazz, options={})
-      count = 0
       if options[:is_google_spreadsheet]
         ENV["GOOGLE_MAIL"] = options[:google_email]
         ENV["GOOGLE_PASSWORD"] = options[:google_password]
@@ -68,15 +62,10 @@ module ImporterExtension
         obj.attributes = row.to_hash.slice(*klazz.accessible_attributes)
         save_object_without_callbacks(obj)
         self.imported_objects << ::ImporterExtension::ImportedObject.new(imported_object_definition_id: obj.id)
-        count += 1
       end
-      
-      count
     end
     
     def import_xml(file, klazz, options={})
-      count = 0
-      
       doc = Nokogiri::XML(file)
       css_selector = options[:css_selector]
       raise "CSS selector needed" if css_selector.blank?
@@ -88,10 +77,7 @@ module ImporterExtension
         obj.attributes = attributes.slice(*klazz.accessible_attributes)
         save_object_without_callbacks(obj)
         self.imported_objects << ::ImporterExtension::ImportedObject.new(imported_object_definition_id: obj.id)
-        count += 1
       end
-      
-      count
     end
     
     def save_object_without_callbacks(obj)
@@ -107,13 +93,10 @@ module ImporterExtension
             obj.define_singleton_method(callback.filter) { p "Not doing anything..."}
           end
         end
-        # Finally save the object
-        obj.save!
-        
-      else
-        # Assume that we're dealing with Datamapper ORM
-        obj.save!
       end
+      
+      # Finally save the object. For Datamapper, +save!+ will skip callbacks.
+      obj.save!
     end
   end
 end
