@@ -91,13 +91,16 @@ module ImporterExtension
       end
     end
     
+    # Saves the object without hitting extension callbacks.
+    #
+    # This is done by setting the callback methods to an empty method on the eigenclass
+    # so that it only affects the instance.
     def save_object_without_callbacks(obj)
       # ActiveRecord ORM should respond to this
       if obj.class.respond_to?(:skip_callback)        
         # Find callbacks
         ["save", "create", "update"].each do |callback_type|
           callbacks = obj.class.send("_#{callback_type}_callbacks").select{|callback| callback.kind.eql?(:after) }
-          #reapply_callbacks[callback_type] = []
           callbacks.each do |callback|
             next unless callback.filter.to_s.match(EXTENSION_REGEX)
             Rails.logger.debug "Skip callback: #{callback.filter}"
