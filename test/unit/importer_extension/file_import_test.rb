@@ -7,9 +7,9 @@ module ImporterExtension
       ::V1::Outage.any_instance.expects(:save!).times(2)
       
       f = Tempfile.new("spreadsheet")
-      f.stubs(:original_filename).returns("#{f.path}.csv")
       f.write("name,description\ntest0,desc0\ntest1,desc1\n")
       file_import = FileImport.new
+      file_import.stubs(:filename).returns("#{f.path}.csv")
       f.close
       file_import.send(:import_spreadsheet, f, ::V1::Outage)
       f.unlink
