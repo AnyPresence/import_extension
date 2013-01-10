@@ -15,7 +15,7 @@ module AP
       class Config
         include Singleton
         
-        attr_accessor :configuration
+        attr_accessor :latest_version, :configuration
       end
       
     end
