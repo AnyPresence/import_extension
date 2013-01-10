@@ -7,4 +7,6 @@ ImporterExtension::Engine.routes.draw do
       post :check_file
     }
   end
+  
+  root :to => "file_imports#new"
 end
