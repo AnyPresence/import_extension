@@ -34,6 +34,16 @@ module ImporterExtension
       end
     end
     
+    def check
+      begin
+        open_spreadsheet(file)
+      rescue
+        Rails.logger.error("File is invalid: #{$!.message}")
+        return false;
+      end      
+      true
+    end
+    
   protected 
   
     def open_spreadsheet(file)

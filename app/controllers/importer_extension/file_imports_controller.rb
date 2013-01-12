@@ -22,8 +22,9 @@ module ImporterExtension
     
     def import
       klazz_name = params[:object_definition].to_s
-      flash[:notice] = "Please select an object definition"
+      
       if klazz_name.blank?
+        flash[:notice] = "Please select an object definition"
         render action: "new"
         return
       end
@@ -46,7 +47,13 @@ module ImporterExtension
         @file_import.file = Moped::BSON::Binary.new(:generic, file.read)
         @file_import.filename = file.original_filename
       end
-     
+      
+      if !@file_import.check
+        flash[:notice] = "Invalid spreadsheet. Make sure the file has the right extension. Supported types are: #{::ImporterExtension::FileImport::SPREADSHEET_FILE_EXTS.to_sentence}"
+        render action: "new"
+        return
+      end
+      
       if @file_import.save
         Resque.enqueue(::ImporterExtension::ImporterWorker, {"file_import_id" => @file_import.id, "klazz_name" => klazz.to_s, "options" => options})
         
