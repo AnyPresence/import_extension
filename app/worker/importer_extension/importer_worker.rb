@@ -8,11 +8,13 @@ class ::ImporterExtension::ImporterWorker
       tempfile = Tempfile.new(file_import.filename)
       tempfile.binmode
       tempfile.write(file_import.file.data)
-      tempfile.close
+      tempfile.rewind
     end
     
     file_import.import(tempfile, klazz_data["klazz_name"].constantize, klazz_data["options"])
-    
-    tempfile.unlink unless tempfile.blank?
+    if !tempfile.blank?
+      tempfile.close
+      tempfile.unlink
+    end
   end
 end
