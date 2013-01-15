@@ -26,3 +26,20 @@ test:
         raise_not_found_error: true
   options:
     raise_not_found_error: false
+production:
+  # Configure available database sessions. (required)
+  sessions:
+    # Defines the default session. (required)
+    default:
+      # Defines the name of the default database that Mongoid can connect to.
+      # (required).
+      database: import_extension_production
+      # Provides the hosts the default session can connect to. Must be an array
+      # of host:port pairs. (required)
+      hosts:
+        - localhost:27017
+      options:
+        consistency: :strong
+  # Configure Mongoid specific options. (optional)
+  options:
+    raise_not_found_error: false
