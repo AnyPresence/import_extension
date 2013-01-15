@@ -14,12 +14,3 @@
 //= require jquery_ujs
 //= require importer_extension/application
 //= require_tree .
-
-$(function () {
-  $('#file').live('change', function(){
-    $in=$(this); 
-    $.post("/importer_extension/file_imports/check_file", {file: $in.val()}, function(data) {
-      $('#xml').html(data);
-    });
-  });
-});
