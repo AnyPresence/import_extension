@@ -36,7 +36,7 @@ module ImporterExtension
     
     def check
       begin
-        open_spreadsheet(file)
+        return (SPREADSHEET_FILE_EXTS+XML_FILE_EXTS).include?(File.extname(filename))
       rescue
         Rails.logger.error("File is invalid: #{$!.message}")
         return false;
@@ -91,14 +91,22 @@ module ImporterExtension
       css_selector = options[:css_selector]
       raise "CSS selector needed" if css_selector.blank?
       
-      doc.css(css_selector).each do |node|
+      count = 0
+      nodeset = doc.css(css_selector)
+      self.total = nodeset.size
+      nodeset.each do |node|
         attributes = Hash.from_xml(node.to_s)
         obj = klazz.find(:id => attributes["id"])
         obj = klazz.new if obj.blank?
         obj.attributes = attributes.slice(*klazz.accessible_attributes)
         save_object_without_callbacks(obj)
+        count += 1
+        self.processed = count
+        save if (count % 100) == 0
         self.imported_objects << ::ImporterExtension::ImportedObject.new(imported_object_definition_id: obj.id)
       end
+      
+      save
     end
     
     # Saves the object without hitting extension callbacks.
