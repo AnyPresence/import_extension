@@ -85,7 +85,7 @@ module ImporterExtension
           # OK to ignore...
         end
         obj = klazz.new if obj.blank?
-        obj.assign_attributes(row.to_hash.slice(*klazz.accessible_attributes), :as => :"System Admin")
+        obj.assign_attributes(row.to_hash.slice(*klazz.accessible_attributes(:"System Admin")), :as => :"System Admin")
         begin
           save_object_without_callbacks(obj)
         rescue
@@ -117,7 +117,7 @@ module ImporterExtension
           # OK to ignore...
         end
         obj = klazz.new if obj.blank?
-        obj.assign_attributes(attributes.values.first.slice(*klazz.accessible_attributes), :as => :"System Admin")
+        obj.assign_attributes(attributes.values.first.slice(*klazz.accessible_attributes(:"System Admin")), :as => :"System Admin")
         begin
           save_object_without_callbacks(obj)
         rescue
