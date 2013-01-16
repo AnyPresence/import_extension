@@ -1,4 +1,7 @@
 require 'nokogiri'
+require 'csv'
+require 'iconv'
+require 'roo'
 
 module ImporterExtension
   class FileImport
