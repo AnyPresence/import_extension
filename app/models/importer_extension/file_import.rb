@@ -1,3 +1,5 @@
+require 'nokogiri'
+
 module ImporterExtension
   class FileImport
     include ActiveModel::MassAssignmentSecurity
@@ -26,8 +28,10 @@ module ImporterExtension
       options = HashWithIndifferentAccess.new(options)
       
       if SPREADSHEET_FILE_EXTS.include?(File.extname(filename)) || options[:is_google_spreadsheet]
+        Rails.logger.info("Importing spreadsheet: #{filename}")
         import_spreadsheet(file, klazz, options)
       elsif XML_FILE_EXTS.include?(File.extname(filename))
+        Rails.logger.info("Importing xml file: #{filename}")
         import_xml(file, klazz, options)
       else
         import_text_file(file, klazz)
@@ -86,7 +90,8 @@ module ImporterExtension
     end
     
     def import_xml(file, klazz, options={})
-      doc = Nokogiri::XML(file)
+      Rails.logger.info("Importing xml file...")
+      doc = ::Nokogiri::XML(file)
       css_selector = options[:css_selector]
       raise "CSS selector needed" if css_selector.blank?
       

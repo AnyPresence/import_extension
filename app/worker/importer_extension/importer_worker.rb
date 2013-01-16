@@ -11,6 +11,7 @@ class ::ImporterExtension::ImporterWorker
       tempfile.rewind
     end
     
+    Rails.logger.info("Importing the file with: model => #{klazz_data['klazz_name']}, options => #{klazz_data['options'].inspect}")
     file_import.import(tempfile, klazz_data["klazz_name"].constantize, klazz_data["options"])
     if !tempfile.blank?
       tempfile.close
