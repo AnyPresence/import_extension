@@ -32,9 +32,13 @@ module ImporterExtension
       klazz = "#{::AP::ImporterExtension::Importer::Config.instance.latest_version.upcase}::#{klazz_name}".constantize
     
       options = {}
-      options[:is_google_spreadsheet] = true unless params[:google_spreadsheet_key].blank?
-      
-      options[:css_selector] = params[:css_selector]
+      selected_import_type = params[:selected_import_type]
+      case selected_import_type
+      when "Google Spreadsheet"
+        options[:is_google_spreadsheet] = true unless params[:google_spreadsheet_key].blank?
+      when "XML"
+        options[:css_selector] = params[:css_selector]
+      end 
         
       @file_import = ::ImporterExtension::FileImport.new
       if options[:is_google_spreadsheet]
