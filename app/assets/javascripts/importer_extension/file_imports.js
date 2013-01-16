@@ -2,7 +2,6 @@
 // All this logic will automatically be available in application.js.
 
 $(function() {
-    $("[rel=tooltip]").tooltip();  
     
     var val = $("input:radio[name=selected_import_type]").val();
     selectedImportedType(val);
