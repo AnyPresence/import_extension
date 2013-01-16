@@ -12,6 +12,7 @@
 //
 //= require jquery
 //= require jquery_ujs
+//= require importer_extension/bootstrap
 //= require_tree .
 
 $(function () {
