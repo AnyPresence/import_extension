@@ -6,7 +6,10 @@
   
   %h2 Processed #{@file_import.processed.to_f}/#{@file_import.total.to_f}
   .progress.progress-striped.active{style: "width: 50%;"}
-    .bar{style: "width: #{(@file_import.processed.to_f/@file_import.total.to_f)*100 + 1}%;"}
+    - if @file_import.total == 0
+      .bar{style: "width: 100%;"}
+    - else
+      .bar{style: "width: #{(@file_import.processed.to_f/@file_import.total.to_f)*100 + 1}%;"}
     
 
 

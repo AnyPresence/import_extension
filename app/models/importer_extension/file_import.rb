@@ -34,15 +34,14 @@ module ImporterExtension
       end
     end
     
-    def check
-      begin
-        return (SPREADSHEET_FILE_EXTS+XML_FILE_EXTS).include?(File.extname(filename))
-      rescue
-        Rails.logger.error("File is invalid: #{$!.message}")
-        return false;
-      end      
-      true
-    end
+    def check(options={})
+      is_valid_ext = (SPREADSHEET_FILE_EXTS+XML_FILE_EXTS).include?(File.extname(filename))
+      if is_valid_ext && XML_FILE_EXTS.include?(File.extname(filename))
+        return false if options[:css_selector].blank?
+      end
+      
+      is_valid_ext    
+  end
     
   protected 
   
@@ -96,7 +95,11 @@ module ImporterExtension
       self.total = nodeset.size
       nodeset.each do |node|
         attributes = Hash.from_xml(node.to_s)
-        obj = klazz.find(:id => attributes["id"])
+        begin
+          obj = klazz.find(:id => attributes["id"])
+        rescue
+          # OK to ignore...
+        end
         obj = klazz.new if obj.blank?
         obj.attributes = attributes.slice(*klazz.accessible_attributes)
         save_object_without_callbacks(obj)
