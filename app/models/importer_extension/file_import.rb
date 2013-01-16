@@ -89,7 +89,7 @@ module ImporterExtension
         begin
           save_object_without_callbacks(obj)
         rescue
-          Rails.logger.error("Not able to save: #{obj.inspect}")
+          Rails.logger.error("Not able to save: #{obj.inspect}, error: #{$!.message}")
         end
         count += 1
         self.processed = count
@@ -121,7 +121,7 @@ module ImporterExtension
         begin
           save_object_without_callbacks(obj)
         rescue
-          Rails.logger.error("Not able to save: #{obj.inspect}")
+          Rails.logger.error("Not able to save: #{obj.inspect}, error: #{$!.message}")
         end
         count += 1
         self.processed = count
