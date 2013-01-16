@@ -9,7 +9,7 @@
  * compiled file, but it's generally better to create a new file per style scope.
  *
  *= require_self
- *= require importer_extension/bootstrap
- *= require importer_extension/bootstrap-responsive
+ *= require bootstrap
+ *= require bootstrap-responsive
  *= require_tree .
  */
