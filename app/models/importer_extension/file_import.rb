@@ -42,7 +42,7 @@ module ImporterExtension
     end
     
     def check(options={})
-      is_valid_ext = (SPREADSHEET_FILE_EXTS+XML_FILE_EXTS).include?(File.extname(filename))
+      is_valid_ext = !options[:is_google_spreadsheet].blank? || (SPREADSHEET_FILE_EXTS+XML_FILE_EXTS).include?(File.extname(filename))
       if is_valid_ext && XML_FILE_EXTS.include?(File.extname(filename))
         return false if options[:css_selector].blank?
       end
@@ -86,7 +86,11 @@ module ImporterExtension
         end
         obj = klazz.new if obj.blank?
         obj.attributes = row.to_hash.slice(*klazz.accessible_attributes)
-        save_object_without_callbacks(obj)
+        begin
+          save_object_without_callbacks(obj)
+        rescue
+          Rails.logger.error("Not able to save: #{obj.inspect}")
+        end
         count += 1
         self.processed = count
         save if (count % 100) == 0
@@ -114,7 +118,11 @@ module ImporterExtension
         end
         obj = klazz.new if obj.blank?
         obj.attributes = attributes.values.first.slice(*klazz.accessible_attributes)
-        save_object_without_callbacks(obj)
+        begin
+          save_object_without_callbacks(obj)
+        rescue
+          Rails.logger.error("Not able to save: #{obj.inspect}")
+        end
         count += 1
         self.processed = count
         save if (count % 100) == 0
@@ -137,7 +145,7 @@ module ImporterExtension
           callbacks.each do |callback|
             next unless callback.filter.to_s.match(EXTENSION_REGEX)
             Rails.logger.debug "Skip callback: #{callback.filter}"
-            obj.define_singleton_method(callback.filter) { p "Not doing anything..."}
+            obj.define_singleton_method(callback.filter) { p "callback disabled..."}
           end
         end
       end

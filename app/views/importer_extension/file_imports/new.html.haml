@@ -5,21 +5,34 @@
     = flash[:notice]
   
 = form_tag import_file_imports_path, multipart: true do
-  = file_field_tag :file
+  .row
+    .span2
+      = label_tag "Local Spreadsheet"
+      = radio_button_tag "selected_import_type", "Local Spreadsheet", true
+    .span2
+      = label_tag "Google Spreadsheet"
+      = radio_button_tag "selected_import_type", "Google Spreadsheet", false
+    .span2
+      = label_tag "XML"
+      = radio_button_tag "selected_import_type", "XML", false
+  %br
+  %br
+  #input_file
+    = file_field_tag :file
+  #local_spreadsheet
+    = render partial: 'local_spreadsheet'
   %br
   #xml
+    = render partial: 'xml'
   %br
-  = label_tag "Google spreadsheet key"
-  = text_field_tag "google_spreadsheet_key"
+  #google_spreadsheet
+    = render partial: 'google_spreadsheet'
   %br
-  = label_tag "Username"
-  = text_field_tag "google_email"
-  %br
-  = label_tag "Password"
-  = password_field_tag "google_password"
-  %br
-  - @available_object_definitions.each do |obj|
-    = label_tag "type", obj.to_s
-    = radio_button_tag "object_definition", obj.to_s, false
+  .row
+    - @available_object_definitions.each do |obj|
+      .span2
+        = label_tag "type", obj.to_s
+        = radio_button_tag "object_definition", obj.to_s, false
+
   %br
   = submit_tag "Import"

@@ -19,8 +19,8 @@ $(function () {
   $('#file').live('change', function(){
     $in=$(this); 
     console.log("Detected file selection event...");
-    $.post("/api/importer_extension/file_imports/check_file", {file: $in.val()}, function(data) {
-      $('#xml').html(data);
-    });
+    // $.post("/api/importer_extension/file_imports/check_file", {file: $in.val()}, function(data) {
+    //   $('#xml').html(data);
+    // });
   });
 });
