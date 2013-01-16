@@ -78,8 +78,12 @@ module ImporterExtension
       self.total = spreadsheet.last_row - HEADER_ROW_START
       count = 0
       ((HEADER_ROW_START+1)..spreadsheet.last_row).each do |i|
-        row = Hash[[header, spreadsheet.row(i)].transpose]
-        obj = klazz.find(:id => row["id"])
+        row = Hash[[header, spreadsheet.row(i)].transpose]        
+        begin
+          obj = klazz.find(:id => row["id"])
+        rescue
+          # OK to ignore...
+        end
         obj = klazz.new if obj.blank?
         obj.attributes = row.to_hash.slice(*klazz.accessible_attributes)
         save_object_without_callbacks(obj)
