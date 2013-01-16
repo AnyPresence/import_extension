@@ -113,7 +113,7 @@ module ImporterExtension
           # OK to ignore...
         end
         obj = klazz.new if obj.blank?
-        obj.attributes = attributes.slice(*klazz.accessible_attributes)
+        obj.attributes = attributes.values.first.slice(*klazz.accessible_attributes)
         save_object_without_callbacks(obj)
         count += 1
         self.processed = count
