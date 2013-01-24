@@ -3,6 +3,7 @@ require_dependency "importer_extension/application_controller"
 module ImporterExtension
   class FileImportsController < ApplicationController
     before_filter :get_main_app_models, only: [:new, :import]
+    before_filter :authenticate_admin!, only: [:import, :show, :new]
     
     def index; end
     
