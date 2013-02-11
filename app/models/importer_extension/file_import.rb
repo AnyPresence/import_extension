@@ -54,9 +54,9 @@ module ImporterExtension
   
     def open_spreadsheet(file)
       case File.extname(filename)
-      when ".csv" then Csv.new(file.path, nil, :ignore)
-      when ".xls" then Excel.new(file.path, nil, :ignore)
-      when ".xlsx" then Excelx.new(file.path, nil, :ignore)
+      when ".csv" then ::Roo::Csv.new(file.path, nil, :ignore)
+      when ".xls" then ::Roo::Excel.new(file.path, nil, :ignore)
+      when ".xlsx" then ::Roo::Excelx.new(file.path, nil, :ignore)
       else raise "unknown file type: #{filename}"
       end
     end
@@ -69,7 +69,7 @@ module ImporterExtension
       if options[:is_google_spreadsheet]
         ENV["GOOGLE_MAIL"] = options[:google_email]
         ENV["GOOGLE_PASSWORD"] = options[:google_password]
-        spreadsheet = Google.new(filename)
+        spreadsheet = ::Roo::Google.new(filename)
       else
         spreadsheet = open_spreadsheet(file)
       end
