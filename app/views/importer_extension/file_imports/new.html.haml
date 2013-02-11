@@ -1,3 +1,4 @@
+= javascript_include_tag "importer_extension/application"
 
 .text-info
   %h3 Import file
@@ -38,4 +39,4 @@
         = label_tag "type", obj.to_s
         = radio_button_tag "object_definition", obj.to_s, false
   .form-actions
-    = submit_tag "Import"
+    = submit_tag "Import", {class: 'btn btn-primary'}
