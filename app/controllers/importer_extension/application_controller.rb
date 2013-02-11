@@ -1,4 +1,3 @@
-module ImporterExtension
-  class ApplicationController < ActionController::Base
-  end
+class ImporterExtension::ApplicationController < ApplicationController
+  layout "layouts/admin"
 end

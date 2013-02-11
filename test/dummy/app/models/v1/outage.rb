@@ -7,6 +7,8 @@ class V1::Outage
   
   after_save :__sms_on_save_perform, :__email_on_save_perform
   
+  #validates_presence_of :description
+  
   field :name, type: String
   field :description, type: String
   

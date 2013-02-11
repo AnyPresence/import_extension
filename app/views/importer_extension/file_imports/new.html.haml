@@ -1,4 +1,7 @@
-%h1 Import file
+= javascript_include_tag "importer_extension/file_imports"
+
+.text-info
+  %h3 Import file
 
 - if !flash[:notice].blank?
   .notice
@@ -28,11 +31,12 @@
   #google_spreadsheet
     = render partial: 'google_spreadsheet'
   %br
+  .text-info
+    %h3 Select an object definition
   .row
     - @available_object_definitions.each do |obj|
       .span2
         = label_tag "type", obj.to_s
         = radio_button_tag "object_definition", obj.to_s, false
-
-  %br
-  = submit_tag "Import"
+  .form-actions
+    = submit_tag "Import"
