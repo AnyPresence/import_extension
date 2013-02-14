@@ -60,7 +60,7 @@ module ImporterExtension
       end
       
       if @file_import.save
-        Resque.enqueue(::ImporterExtension::ImporterWorker, {"file_import_id" => @file_import.id, "klazz_name" => klazz.to_s, "options" => options})
+        Resque.enqueue(::ImporterExtension::ImporterWorker, {"file_import_id" => @file_import.id.to_s, "klazz_name" => klazz.to_s, "options" => options})
         
         redirect_to @file_import
       else
