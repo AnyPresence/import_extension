@@ -74,12 +74,13 @@ protected
       @available_object_definitions = "#{::AP::ImporterExtension::Importer::Config.instance.latest_version.upcase}".constantize.constants
       if @available_object_definitions.blank?
         version = ::AP::ImporterExtension::Importer::Config.instance.latest_version
-        Dir.glob(Rails.root.join("app", "models", version, "*")).each do |f|
+        Dir.glob(Rails.root.join("app", "models", version, "*.rb")).each do |f|
           "::#{version.upcase}::#{File.basename(f, '.*').camelize}".constantize.name 
         end
 
         @available_object_definitions = "#{::AP::ImporterExtension::Importer::Config.instance.latest_version.upcase}".constantize.constants
       end
+      @available_object_definitions.delete(:Custom)
     end
 
   end
