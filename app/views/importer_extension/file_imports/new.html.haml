@@ -1,42 +1,55 @@
 = javascript_include_tag "importer_extension/application"
 
-.text-info
-  %h3 Import file
+%ul.breadcrumb
+  %li
+    = link_to 'Home', main_app.admin_root_path
+    %span.divider /
+  %li
+    = link_to 'Extensions', main_app.admin_extensions_path
+    %span.divider /
+  %li.active Import Data
+
+.alert.alert-info.clearfix
+  %h1 Import Data
+  %p Import data into your application from a source file or remote location.
 
 - if !flash[:notice].blank?
-  .notice
+  .alert.alert-error
+    %a.close{href: '#', data: {dismiss: 'alert'}} &times;
     = flash[:notice]
-  
+
+
 = form_tag import_file_imports_path, multipart: true do
-  .row
-    .span2
-      = label_tag "Local Spreadsheet"
-      = radio_button_tag "selected_import_type", "Local Spreadsheet", true
-    .span2
-      = label_tag "Google Spreadsheet"
-      = radio_button_tag "selected_import_type", "Google Spreadsheet", false
-    .span2
-      = label_tag "XML"
-      = radio_button_tag "selected_import_type", "XML", false
-  %br
-  %br
-  #input_file
-    = file_field_tag :file
-  #local_spreadsheet
-    = render partial: 'local_spreadsheet'
-  %br
-  #xml
-    = render partial: 'xml'
-  %br
-  #google_spreadsheet
-    = render partial: 'google_spreadsheet'
-  %br
-  .text-info
-    %h3 Select an object definition
-  .row
-    - @available_object_definitions.each do |obj|
-      .span2
-        = label_tag "type", obj.to_s
-        = radio_button_tag "object_definition", obj.to_s, false
+  .row-fluid
+    .span8
+      .well
+        %h4 Import From
+        %p.muted Select a file or remote service from which to import data.
+        .row-fluid
+          .span4
+            %ul.import-type-nav.nav.nav-pills.nav-stacked
+              %li.active
+                %a{href: '#local-spreadsheet', data: {toggle: 'tab', type: 'Local Spreadsheet', file_upload: true}} Local Spreadsheet
+              %li
+                %a{href: '#local-xml', data: {toggle: 'tab', type: 'XML', file_upload: true}} Local XML
+              %li
+                %a{href: '#google-spreadsheet', data: {toggle: 'tab', type: 'Google Spreadsheet'}} Google Spreadsheet
+          .span7.offset1
+            .file-upload
+              .well.well-small= file_field_tag :file
+            .tab-content
+              .tab-pane.active#local-spreadsheet= render partial: 'local_spreadsheet'
+              .tab-pane#local-xml= render partial: 'xml'
+              .tab-pane#google-spreadsheet= render partial: 'google_spreadsheet'
+    .span4
+      .well
+        %h4 Import To
+        %p.muted Select a destination object to which to save imported data.
+        - @available_object_definitions.each do |obj|
+          = label_tag '', class: 'radio' do
+            = radio_button_tag "object_definition", obj.to_s, false
+            = obj.to_s
+  
+  = hidden_field_tag "selected_import_type"
   .form-actions
     = submit_tag "Import", {class: 'btn btn-primary'}

@@ -1,8 +1,9 @@
-= label_tag "Google spreadsheet key"
-= text_field_tag "google_spreadsheet_key"
-%br
-= label_tag "Username"
-= text_field_tag "google_email"
-%br
-= label_tag "Password"
-= password_field_tag "google_password"
+.control-group
+  = label_tag 'Google Spreadsheet Key'
+  .controls= text_field_tag "google_spreadsheet_key"
+.control-group
+  = label_tag 'Username'
+  .controls= text_field_tag "google_email"
+.control-group
+  = label_tag 'Password'
+  .controls= password_field_tag "google_password"

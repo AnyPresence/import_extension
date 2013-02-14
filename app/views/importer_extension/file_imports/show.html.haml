@@ -1,19 +1,32 @@
-%h1 Saving objects...
-.container
-  %meta{:content => "5", "http-equiv" => "refresh"}
+%meta{:content => "5", "http-equiv" => "refresh"}
 
-  %b= "This page will refresh automatically in 5 seconds."
+%ul.breadcrumb
+  %li
+    = link_to 'Home', main_app.admin_root_path
+    %span.divider /
+  %li
+    = link_to 'Extensions', main_app.admin_extensions_path
+    %span.divider /
+  %li
+    = link_to 'Import Data', settings_path
+    %span.divider /
+  %li.active Importing&hellip;
+
+
+.page-header
+  %h1 Importing&hellip;
+  .row-fluid
+    .span4
+      .progress.progress-striped.active
+        - if @file_import.total == 0
+          .bar{style: "width: 100%;"}
+        - else
+          .bar{style: "width: #{(@file_import.processed.to_f/@file_import.total.to_f)*100 + 1}%;"}
+    .span8
+      %span.label #{@file_import.processed.to_f}
+      of
+      %span.label.label-info #{@file_import.total.to_f}
+      processed
   
-  %h2 Processed #{@file_import.processed.to_f}/#{@file_import.total.to_f}
-  .progress.progress-striped.active{style: "width: 50%;"}
-    - if @file_import.total == 0
-      .bar{style: "width: 100%;"}
-    - else
-      .bar{style: "width: #{(@file_import.processed.to_f/@file_import.total.to_f)*100 + 1}%;"}
-    
 
-
-
-
-
-
+.alert= "This page will refresh automatically in 5 seconds."
