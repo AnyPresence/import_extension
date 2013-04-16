@@ -1,8 +1,9 @@
 PATH
   remote: .
   specs:
-    importer_extension (0.0.4)
+    importer_extension (0.0.5)
       google-spreadsheet-ruby (= 0.3.1)
+      iconv (~> 1.0.3)
       mongoid (~> 3.0.6)
       nokogiri
       rails (~> 3.2.9)
@@ -50,7 +51,6 @@ GEM
       coffee-script-source
       execjs
     coffee-script-source (1.4.0)
-    columnize (0.3.6)
     compass (0.12.2)
       chunky_png (~> 1.2)
       fssm (>= 0.2.7)
@@ -58,13 +58,6 @@ GEM
     compass-rails (1.0.3)
       compass (>= 0.12.2, < 0.14)
     database_cleaner (0.9.1)
-    debugger (1.2.2)
-      columnize (>= 0.3.1)
-      debugger-linecache (~> 1.1.1)
-      debugger-ruby_core_source (~> 1.1.5)
-    debugger-linecache (1.1.2)
-      debugger-ruby_core_source (>= 1.1.1)
-    debugger-ruby_core_source (1.1.5)
     erubis (2.7.0)
     execjs (1.4.0)
       multi_json (~> 1.0)
@@ -83,6 +76,7 @@ GEM
     hike (1.2.1)
     httpauth (0.2.0)
     i18n (0.6.1)
+    iconv (1.0.3)
     journey (1.0.4)
     jquery-rails (2.1.4)
       railties (>= 3.0, < 5.0)
@@ -208,10 +202,10 @@ DEPENDENCIES
   coffee-rails (~> 3.2.1)
   compass-rails (= 1.0.3)
   database_cleaner
-  debugger
   factory_girl (= 3.3.0)
   google-spreadsheet-ruby (= 0.3.1)
   haml (= 3.1.7)
+  iconv (~> 1.0.3)
   importer_extension!
   jquery-rails
   jquery_mobile_rails (= 1.2.0)
