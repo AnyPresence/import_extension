@@ -23,8 +23,8 @@ Gem::Specification.new do |s|
   s.add_dependency "nokogiri"
   s.add_dependency "resque"
   s.add_dependency "redis"
+  s.add_dependency "iconv", "~> 1.0.3"
 
-  s.add_development_dependency "debugger"
   s.add_development_dependency "database_cleaner"
   s.add_development_dependency "factory_girl", "= 3.3.0"
   s.add_development_dependency "shoulda"

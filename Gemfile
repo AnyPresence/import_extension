@@ -20,6 +20,7 @@ gem 'nokogiri'
 gem 'mocha', "~> 0.12.3", :require => false
 gem "resque"
 gem "redis"
+gem "iconv", "~> 1.0.3"
 
 group :assets do
   gem 'therubyracer'
@@ -32,4 +33,4 @@ end
 # your gem to rubygems.org.
 
 # To use debugger
-gem 'debugger'
+#gem 'debugger'
