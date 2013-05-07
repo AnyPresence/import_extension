@@ -51,6 +51,7 @@ module ImporterExtension
       rescue
         Rails.logger.error("Failed to import data: #{$!.message}")
         self.update_attributes!(failure_message: $!.message, failed: true)
+        raise148
       end
       
     end
@@ -115,6 +116,7 @@ module ImporterExtension
         spreadsheet = open_spreadsheet(file)
       end
       header = spreadsheet.row(HEADER_ROW_START)
+      id_col = header.first
       
       self.total = spreadsheet.last_row - HEADER_ROW_START
       count = 0
@@ -123,7 +125,14 @@ module ImporterExtension
       ((HEADER_ROW_START+1)..spreadsheet.last_row).each do |i|
         row = Hash[[header, spreadsheet.row(i)].transpose]        
         begin
-          obj = klazz.find(:id => row["id"])
+          case klazz.backing_storage
+          when :mongoid
+            obj = klazz.where(id_col.to_sym => row[id_col]).first
+          when :datamapper
+            obj = klazz.all(id_col.to_sym => row[id_col]).first
+          else
+            Rails.logger.error("Don't know how to handle: #{klazz.backing_storage}")
+          end
         rescue
           # OK to ignore...
         end
@@ -140,9 +149,8 @@ module ImporterExtension
         count += 1
         self.processed = count
         self.failed_objects = failure_count
+        self.imported_objects << ::ImporterExtension::ImportedObject.new(imported_object_definition_id: obj.send(id_col.to_sym), failure_message: failure_message)
         save if (count % 100) == 0
-        
-        self.imported_objects << ::ImporterExtension::ImportedObject.new(imported_object_definition_id: obj.id, failure_message: failure_message)
       end
       save
     end
@@ -160,13 +168,23 @@ module ImporterExtension
       self.total = nodeset.size
       nodeset.each do |node|
         attributes = Hash.from_xml(node.to_s)
+        object_attributes = attributes.values.first
+        id_col = object_attributes.keys.first
         begin
-          obj = klazz.find(:id => attributes["id"])
+          case klazz.backing_storage
+          when :mongoid
+            obj = klazz.where(id_col.to_sym => row[id_col]).first
+          when :datamapper
+            obj = klazz.all(id_col.to_sym => row[id_col]).first
+          else
+            Rails.logger.error("Don't know how to handle: #{klazz.backing_storage}")
+          end
         rescue
           # OK to ignore...
         end
+
         obj = klazz.new if obj.blank?
-        obj.assign_attributes(attributes.values.first.slice(*klazz.accessible_attributes(:"System Admin")), :as => :"System Admin")
+        obj.assign_attributes(object_attributes.slice(*klazz.accessible_attributes(:"System Admin")), :as => :"System Admin")
         begin
           save_object_without_callbacks(obj)
         rescue
@@ -177,8 +195,8 @@ module ImporterExtension
         end
         count += 1
         self.processed = count
-        save if (count % 100) == 0
-        self.imported_objects << ::ImporterExtension::ImportedObject.new(imported_object_definition_id: obj.id, failure_message: failure_message)
+        self.imported_objects << ::ImporterExtension::ImportedObject.new(imported_object_definition_id: obj.send(id_col.to_sym), failure_message: failure_message)
+        save if (count % 100) == 0        
       end
       
       save

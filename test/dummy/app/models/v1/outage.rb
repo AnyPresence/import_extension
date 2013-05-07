@@ -20,4 +20,8 @@ class V1::Outage
     p "Sending fake email!"
   end
   
+  def self.backing_storage
+    :mongoid
+  end
+  
 end
