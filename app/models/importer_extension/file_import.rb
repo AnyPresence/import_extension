@@ -12,7 +12,7 @@ module ImporterExtension
     EXTENSION_REGEX = /__.*_perform/
     HEADER_ROW_START = 1
 
-    attr_accessible :file_type, :filename, :name
+    attr_accessible :file_type, :filename, :name, :failure_message, :finished, :failed
 
     field :file, type: Moped::BSON::Binary
     field :filename, type: String, default: ""
@@ -35,6 +35,7 @@ module ImporterExtension
       options = HashWithIndifferentAccess.new(options)
       
       begin
+        self.update_attributes!(started: true)
         if SPREADSHEET_FILE_EXTS.include?(File.extname(filename)) || options[:is_google_spreadsheet]
           Rails.logger.info("Importing spreadsheet: #{filename}")
           import_spreadsheet(file, klazz, options)
@@ -45,10 +46,10 @@ module ImporterExtension
           import_text_file(file, klazz)
         end
         
-        self.update_attributes(finished: true)
+        self.update_attributes!(finished: true)
       rescue
         Rails.logger.error("Failed to import data: #{$!.message}")
-        self.update_attributes(failure_message: $!.message, failed: true)
+        self.update_attributes!(failure_message: $!.message, failed: true)
       end
       
     end

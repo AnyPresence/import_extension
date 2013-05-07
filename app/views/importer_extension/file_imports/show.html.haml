@@ -1,10 +1,7 @@
 - if !(@file_import.finished || @file_import.failed)
   %meta{:content => "5", "http-equiv" => "refresh"}
   
-- if @file_import.finished
-  .alert Finished!
-- elsif @file_import.failed
-  .alert= Import failed: #{@file_import.failure_message}
+
 
 %ul.breadcrumb
   %li
@@ -18,7 +15,11 @@
     %span.divider /
   %li.active Importing&hellip;
 
-
+- if @file_import.finished
+  .alert Finished!
+- elsif @file_import.failed
+  .alert= "Import failed: #{@file_import.failure_message}"
+    
 .page-header
   %h1 Importing&hellip;
   .row-fluid
@@ -34,5 +35,5 @@
       %span.label.label-info #{@file_import.total.to_f}
       processed
   
-
-.alert= "This page will refresh automatically in 5 seconds."
+- if !(@file_import.finished || @file_import.failed)
+  .alert= "This page will refresh automatically in 5 seconds."
