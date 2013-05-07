@@ -19,6 +19,9 @@ module ImporterExtension
     field :object_definition_name, type: String
     field :processed, type: Integer, default: 0
     field :started, type: Boolean, default: false
+    field :finished, type: Boolean, default: false
+    field :failed, type: Boolean, default: false
+    field :failure_message, type: String
     field :total, type: Integer
     
     embeds_many :imported_objects, :class_name => "ImporterExtension::ImportedObject"
@@ -41,8 +44,11 @@ module ImporterExtension
         else
           import_text_file(file, klazz)
         end
+        
+        self.update_attributes(finished: true)
       rescue
-        self.ad
+        Rails.logger.error("Failed to import data: #{$!.message}")
+        self.update_attributes(failure_message: $!.message, failed: true)
       end
       
     end

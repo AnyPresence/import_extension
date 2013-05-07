@@ -56,9 +56,7 @@ module ImporterExtension
       
       if @file_import.save
         if !@file_import.check(options)
-          debugger
           flash[:notice] = "Invalid file. Make sure the file has the right extension. If it's an xml file, please specify the css selector for the object. Supported types are: #{::ImporterExtension::FileImport::SPREADSHEET_FILE_EXTS.to_sentence}."
-          debugger
           flash[:error] = @file_import.errors.to_a
           render action: "new"
           return

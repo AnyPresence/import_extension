@@ -1,4 +1,10 @@
-%meta{:content => "5", "http-equiv" => "refresh"}
+- if !(@file_import.finished || @file_import.failed)
+  %meta{:content => "5", "http-equiv" => "refresh"}
+  
+- if @file_import.finished
+  .alert Finished!
+- elsif @file_import.failed
+  .alert= Import failed: #{@file_import.failure_message}
 
 %ul.breadcrumb
   %li
