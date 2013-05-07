@@ -5,6 +5,7 @@ module ImporterExtension
     include Mongoid::Timestamps
     
     field :imported_object_definition_id, type: String
+    field :failure_message, type: String
     
     embedded_in :file_import, class_name: "ImporterExtension::FileImport"
   end

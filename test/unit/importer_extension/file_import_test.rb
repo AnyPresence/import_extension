@@ -7,12 +7,40 @@ module ImporterExtension
       ::V1::Outage.any_instance.expects(:save!).times(2)
       
       f = Tempfile.new("spreadsheet")
-      f.write("name,description\ntest0,desc0\ntest1,desc1\n")
-      file_import = FileImport.new
-      file_import.stubs(:filename).returns("#{f.path}.csv")
-      f.close
-      file_import.send(:import_spreadsheet, f, ::V1::Outage)
-      f.unlink
+      begin
+        f.write("name,description\ntest0,desc0\ntest1,desc1\n")
+        file_import = FileImport.new
+        file_import.stubs(:filename).returns("#{f.path}.csv")
+        f.rewind
+        assert_nothing_raised {
+          file_import.send(:import_spreadsheet, f, ::V1::Outage)
+        }
+      ensure
+        if !f.blank?
+          f.close       
+          f.unlink
+        end
+      end
+    end
+    
+    test "import spreadsheet failure" do
+      f = Tempfile.new("spreadsheet")
+      begin
+        f.write("name,description\ntest0,desc0\ntest1,desc1\n")
+        file_import = FileImport.new
+        file_import.stubs(:filename).returns("#{f.path}.csv")
+        f.rewind
+        
+        FileImport.any_instance.stubs(:save_object_without_callbacks).raises(StandardError, "uh oh")
+        file_import.send(:import_spreadsheet, f, ::V1::Outage)
+        assert file_import.failed_objects > 0
+        assert !file_import.imported_objects.where(failure_message: /^Not able to save/).empty?
+      ensure
+        if !f.blank?
+          f.close       
+          f.unlink
+        end
+      end
     end
     
     test "save without callbacks" do 
@@ -43,14 +71,18 @@ module ImporterExtension
           </outage>
         </v1-outages>
       RUBY
-      
-      f.write(xml)
-      file_import = FileImport.new
-      file_import.stubs(:filename).returns("#{f.path}.xml")
-      f.rewind
-      file_import.send(:import_xml, f, ::V1::Outage, {:css_selector => "outage"})
-      f.close
-      f.unlink
+      begin
+        f.write(xml)
+        file_import = FileImport.new
+        file_import.stubs(:filename).returns("#{f.path}.xml")
+        f.rewind
+        file_import.send(:import_xml, f, ::V1::Outage, {:css_selector => "outage"})
+      ensure
+        if !f.blank?
+          f.close
+          f.unlink
+        end
+      end
       
       assert_not_nil(::V1::Outage.find(:name => "cake"))
     end

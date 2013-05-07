@@ -12,7 +12,7 @@ module ImporterExtension
     EXTENSION_REGEX = /__.*_perform/
     HEADER_ROW_START = 1
 
-    attr_accessible :file_type, :filename, :name, :failure_message, :finished, :failed
+    attr_accessible :file_type, :filename, :name, :failure_message, :finished, :failed, :failed_objects
 
     field :file, type: Moped::BSON::Binary
     field :filename, type: String, default: ""
@@ -22,6 +22,7 @@ module ImporterExtension
     field :finished, type: Boolean, default: false
     field :failed, type: Boolean, default: false
     field :failure_message, type: String
+    field :failed_objects, type: Integer, default: 0
     field :total, type: Integer
     
     embeds_many :imported_objects, :class_name => "ImporterExtension::ImportedObject"
@@ -117,6 +118,8 @@ module ImporterExtension
       
       self.total = spreadsheet.last_row - HEADER_ROW_START
       count = 0
+      failure_count = 0
+      failure_message = nil
       ((HEADER_ROW_START+1)..spreadsheet.last_row).each do |i|
         row = Hash[[header, spreadsheet.row(i)].transpose]        
         begin
@@ -129,13 +132,17 @@ module ImporterExtension
         begin
           save_object_without_callbacks(obj)
         rescue
-          Rails.logger.error("Not able to save: #{obj.inspect}, error: #{$!.message}")
+          msg = "Not able to save: #{obj.inspect}, error: #{$!.message}"
+          Rails.logger.error(msg)
+          failure_message = msg
+          failure_count += 1
         end
         count += 1
         self.processed = count
+        self.failed_objects = failure_count
         save if (count % 100) == 0
         
-        self.imported_objects << ::ImporterExtension::ImportedObject.new(imported_object_definition_id: obj.id)
+        self.imported_objects << ::ImporterExtension::ImportedObject.new(imported_object_definition_id: obj.id, failure_message: failure_message)
       end
       save
     end
@@ -147,6 +154,8 @@ module ImporterExtension
       raise "CSS selector needed" if css_selector.blank?
       
       count = 0
+      failure_count = 0
+      failure_message = nil
       nodeset = doc.css(css_selector)
       self.total = nodeset.size
       nodeset.each do |node|
@@ -161,12 +170,15 @@ module ImporterExtension
         begin
           save_object_without_callbacks(obj)
         rescue
-          Rails.logger.error("Not able to save: #{obj.inspect}, error: #{$!.message}")
+          msg = "Not able to save: #{obj.inspect}, error: #{$!.message}"
+          Rails.logger.error(msg)
+          failure_message = msg
+          failure_count += 1
         end
         count += 1
         self.processed = count
         save if (count % 100) == 0
-        self.imported_objects << ::ImporterExtension::ImportedObject.new(imported_object_definition_id: obj.id)
+        self.imported_objects << ::ImporterExtension::ImportedObject.new(imported_object_definition_id: obj.id, failure_message: failure_message)
       end
       
       save
