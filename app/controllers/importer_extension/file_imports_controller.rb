@@ -23,7 +23,6 @@ module ImporterExtension
     
     def import
       klazz_name = params[:object_definition].to_s
-      
       if klazz_name.blank?
         flash[:notice] = "Please select an object definition"
         render action: "new"
@@ -40,6 +39,7 @@ module ImporterExtension
       when "XML"
         options[:css_selector] = params[:css_selector]
       end 
+      
         
       @file_import = ::ImporterExtension::FileImport.new
       if options[:is_google_spreadsheet]
@@ -53,13 +53,17 @@ module ImporterExtension
         @file_import.filename = file.original_filename
       end
       
-      if !@file_import.check(options)
-        flash[:notice] = "Invalid file. Make sure the file has the right extension. If it's an xml file, please specify the css selector for the object. Supported types are: #{::ImporterExtension::FileImport::SPREADSHEET_FILE_EXTS.to_sentence}"
-        render action: "new"
-        return
-      end
       
       if @file_import.save
+        if !@file_import.check(options)
+          debugger
+          flash[:notice] = "Invalid file. Make sure the file has the right extension. If it's an xml file, please specify the css selector for the object. Supported types are: #{::ImporterExtension::FileImport::SPREADSHEET_FILE_EXTS.to_sentence}."
+          debugger
+          flash[:error] = @file_import.errors.to_a
+          render action: "new"
+          return
+        end
+        
         Resque.enqueue(::ImporterExtension::ImporterWorker, {"file_import_id" => @file_import.id.to_s, "klazz_name" => klazz.to_s, "options" => options})
         
         redirect_to @file_import

@@ -18,6 +18,7 @@ module ImporterExtension
     field :filename, type: String, default: ""
     field :object_definition_name, type: String
     field :processed, type: Integer, default: 0
+    field :started, type: Boolean, default: false
     field :total, type: Integer
     
     embeds_many :imported_objects, :class_name => "ImporterExtension::ImportedObject"
@@ -30,15 +31,20 @@ module ImporterExtension
       self.object_definition_name = klazz.to_s
       options = HashWithIndifferentAccess.new(options)
       
-      if SPREADSHEET_FILE_EXTS.include?(File.extname(filename)) || options[:is_google_spreadsheet]
-        Rails.logger.info("Importing spreadsheet: #{filename}")
-        import_spreadsheet(file, klazz, options)
-      elsif XML_FILE_EXTS.include?(File.extname(filename))
-        Rails.logger.info("Importing xml file: #{filename}")
-        import_xml(file, klazz, options)
-      else
-        import_text_file(file, klazz)
+      begin
+        if SPREADSHEET_FILE_EXTS.include?(File.extname(filename)) || options[:is_google_spreadsheet]
+          Rails.logger.info("Importing spreadsheet: #{filename}")
+          import_spreadsheet(file, klazz, options)
+        elsif XML_FILE_EXTS.include?(File.extname(filename))
+          Rails.logger.info("Importing xml file: #{filename}")
+          import_xml(file, klazz, options)
+        else
+          import_text_file(file, klazz)
+        end
+      rescue
+        self.ad
       end
+      
     end
     
     def check(options={})
@@ -47,10 +53,37 @@ module ImporterExtension
         return false if options[:css_selector].blank?
       end
       
+      if is_valid_ext && SPREADSHEET_FILE_EXTS.include?(File.extname(filename))
+        tempfile = open_file
+        begin
+          spreadsheet = open_spreadsheet(tempfile)
+          header = spreadsheet.row(HEADER_ROW_START)
+          ((HEADER_ROW_START+1)..spreadsheet.last_row).each do |i|
+            spreadsheet.row(i)
+          end
+        rescue
+          self.errors.add(:base, "Unable to open file: #{$!.message}");
+          return false
+        ensure
+          if !tempfile.blank?
+            tempfile.close
+            tempfile.unlink
+          end
+        end
+      end
+      
       is_valid_ext    
-  end
+    end
     
   protected 
+  
+    def open_file
+      tempfile = Tempfile.new(self.filename)
+      tempfile.binmode
+      tempfile.write(self.file.data)
+      tempfile.rewind
+      tempfile
+    end
   
     def open_spreadsheet(file)
       case File.extname(filename)

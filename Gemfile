@@ -17,10 +17,14 @@ gem 'simple_form', '2.0.4'
 gem 'sass-rails', '3.2.5'
 gem 'compass-rails', '1.0.3'
 gem 'nokogiri'
-gem 'mocha', "~> 0.12.3", :require => false
 gem "resque"
 gem "redis"
 gem "iconv", "~> 1.0.3"
+
+group :test do
+  gem 'mocha', "~> 0.13.3", require: false
+  gem "shoulda"
+end
 
 group :assets do
   gem 'therubyracer'
@@ -33,4 +37,4 @@ end
 # your gem to rubygems.org.
 
 # To use debugger
-#gem 'debugger'
+gem 'debugger', '1.5.0'

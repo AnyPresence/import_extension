@@ -4,7 +4,7 @@
   %li
     = link_to 'Home', main_app.admin_root_path
     %span.divider /
-  %li
+  %li 
     = link_to 'Extensions', main_app.admin_extensions_path
     %span.divider /
   %li.active Import Data
@@ -17,6 +17,12 @@
   .alert.alert-error
     %a.close{href: '#', data: {dismiss: 'alert'}} &times;
     = flash[:notice]
+    
+- if !flash[:error].blank?
+  .alert.alert-error
+    %a.close{href: '#', data: {dismiss: 'alert'}} &times;
+    = flash[:error]
+
 
 
 = form_tag import_file_imports_path, multipart: true do
