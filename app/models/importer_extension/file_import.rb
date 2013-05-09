@@ -120,7 +120,7 @@ module ImporterExtension
       ((HEADER_ROW_START+1)..spreadsheet.last_row).each do |i|
         row = Hash[[header, spreadsheet.row(i)].transpose]        
         begin
-          obj = klazz.find(:id => row["id"])
+          obj = klazz.where(:id => row["id"]).first
         rescue
           # OK to ignore...
         end
@@ -134,8 +134,9 @@ module ImporterExtension
         count += 1
         self.processed = count
         save if (count % 100) == 0
-        
-        self.imported_objects << ::ImporterExtension::ImportedObject.new(imported_object_definition_id: obj.id)
+        if !obj.blank?
+          self.imported_objects << ::ImporterExtension::ImportedObject.new(imported_object_definition_id: obj.id)
+        end
       end
       save
     end
@@ -151,22 +152,26 @@ module ImporterExtension
       self.total = nodeset.size
       nodeset.each do |node|
         attributes = Hash.from_xml(node.to_s)
-        begin
-          obj = klazz.find(:id => attributes["id"])
-        rescue
-          # OK to ignore...
-        end
-        obj = klazz.new if obj.blank?
-        obj.assign_attributes(attributes.values.first.slice(*klazz.accessible_attributes(:"System Admin")), :as => :"System Admin")
-        begin
-          save_object_without_callbacks(obj)
-        rescue
-          Rails.logger.error("Not able to save: #{obj.inspect}, error: #{$!.message}")
+        if attributes.values.first.is_a?(Hash)
+          begin
+            obj = klazz.where(:id => attributes.values.first["id"]).first
+          rescue
+            # OK to ignore...
+          end
+          obj = klazz.new if obj.blank?
+          obj.assign_attributes(attributes.values.first.slice(*klazz.accessible_attributes(:"System Admin")), :as => :"System Admin")
+          begin
+            save_object_without_callbacks(obj)
+          rescue
+            Rails.logger.error("Not able to save: #{obj.inspect}, error: #{$!.message}")
+          end
         end
         count += 1
         self.processed = count
         save if (count % 100) == 0
-        self.imported_objects << ::ImporterExtension::ImportedObject.new(imported_object_definition_id: obj.id)
+        if !obj.blank?
+          self.imported_objects << ::ImporterExtension::ImportedObject.new(imported_object_definition_id: obj.id)
+        end
       end
       
       save
