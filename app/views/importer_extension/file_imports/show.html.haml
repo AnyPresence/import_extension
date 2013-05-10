@@ -30,9 +30,9 @@
         - else
           .bar{style: "width: #{(@file_import.processed.to_f/@file_import.total.to_f)*100 + 1}%;"}
     .span8
-      %span.label #{@file_import.processed.to_f}
+      %span.label #{@file_import.processed.to_i}
       of
-      %span.label.label-info #{@file_import.total.to_f}
+      %span.label.label-info #{@file_import.total.to_i}
       processed
   
 - if !(@file_import.finished || @file_import.failed)
