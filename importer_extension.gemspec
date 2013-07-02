@@ -19,7 +19,7 @@ Gem::Specification.new do |s|
   s.add_dependency "rails", "~> 3.2.9"
   s.add_dependency "roo", '1.10.2'
   s.add_dependency "google-spreadsheet-ruby", '0.3.1'
-  s.add_dependency "mongoid", "~> 3.0.6"
+  s.add_dependency "mongoid", "~> 3.1"
   s.add_dependency "nokogiri"
   s.add_dependency "resque"
   s.add_dependency "redis"
