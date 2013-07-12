@@ -30,7 +30,7 @@ module ImporterExtension
       end
       
       klazz = "#{::AP::ImporterExtension::Importer::Config.instance.latest_version.upcase}::#{klazz_name}".constantize
-    
+      
       options = {}
       selected_import_type = params[:selected_import_type]
       case selected_import_type
