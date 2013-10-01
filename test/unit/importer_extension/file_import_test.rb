@@ -22,9 +22,7 @@ module ImporterExtension
       file_import.send(:save_object_without_callbacks, outage)
     end
     
-    test "import xml file" do
-      ::V1::Outage.any_instance.expects(:save!).times(3)
-      
+    test "import xml file" do      
       f = Tempfile.new("xml")
       xml = <<-RUBY
         <?xml version="1.0" encoding="UTF-8"?>
@@ -52,7 +50,7 @@ module ImporterExtension
       f.close
       f.unlink
       
-      assert_not_nil(::V1::Outage.find(:name => "cake"))
+      assert_not_nil(::V1::Outage.where(:name => "cake").first)
     end
     
   end
