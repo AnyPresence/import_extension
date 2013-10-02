@@ -7,7 +7,7 @@ gemspec
 
 # jquery-rails is used by the dummy application
 gem "jquery-rails"
-gem "roo", '1.10.2'
+gem "roo", '1.12.2'
 gem 'google-spreadsheet-ruby', '0.3.1'
 gem 'mongoid', "~> 3.1"
 gem 'haml', '3.1.7'
