@@ -3,7 +3,29 @@ require 'test_helper'
 module ImporterExtension
   class FileImportTest < ActiveSupport::TestCase
     
-    test "import spreadsheet" do
+    test "import xls spreadsheet" do
+      ::V1::Outage.any_instance.expects(:save!).times(2)
+      
+      filename = File.join(".", "test", "support", "dummy_file.xls")
+      File.open(filename) do |file|
+        file_import = FileImport.new
+        file_import.stubs(:filename).returns("#{filename}")
+        file_import.send(:import_spreadsheet, file, ::V1::Outage)
+      end
+    end
+    
+    test "import xlsx spreadsheet" do
+      ::V1::Outage.any_instance.expects(:save!).times(2)
+      
+      filename = File.join(".", "test", "support", "dummy_file.xlsx")
+      File.open(filename) do |file|
+        file_import = FileImport.new
+        file_import.stubs(:filename).returns("#{filename}")
+        file_import.send(:import_spreadsheet, file, ::V1::Outage)
+      end
+    end
+    
+    test "import csv spreadsheet" do
       ::V1::Outage.any_instance.expects(:save!).times(2)
       
       f = Tempfile.new("spreadsheet")
