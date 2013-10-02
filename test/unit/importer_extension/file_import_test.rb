@@ -2,7 +2,19 @@ require 'test_helper'
 
 module ImporterExtension
   class FileImportTest < ActiveSupport::TestCase
+
+    def setup
+      ::V1::Contact.destroy_all
     
+      @contacts_csv = <<CSV
+name,email_address,phone_number,description,priority
+"Jones, Fred","fred.jones@gmail.com",(877) 241-LUNA,"Jonesie, you're my hero!",1
+"Jones, Mike","mike.jones@gmail.com",,Son of a Jones,
+"Pea Tear Gryphon",,,,
+,,,,
+CSV
+    end
+  
     test "import xls spreadsheet" do
       ::V1::Outage.any_instance.expects(:save!).times(2)
       
@@ -25,6 +37,62 @@ module ImporterExtension
       end
     end
     
+    test "import csv should not import a record that contains nothing but nil values" do
+      f = Tempfile.new("spreadsheet")
+
+      f.write(@contacts_csv)
+      file_import = FileImport.new
+      file_import.stubs(:filename).returns("#{f.path}.csv")
+      f.close
+      file_import.send(:import_spreadsheet, f, ::V1::Contact)
+      f.unlink
+      
+      assert_equal 3, ::V1::Contact.all.size
+    end
+
+    test "import csv should treat records containing the empty string as nils" do
+      f = Tempfile.new("spreadsheet")
+
+      f.write(@contacts_csv)
+      file_import = FileImport.new
+      file_import.stubs(:filename).returns("#{f.path}.csv")
+      f.close
+      file_import.send(:import_spreadsheet, f, ::V1::Contact)
+      f.unlink
+            
+      mike = ::V1::Contact.find_by(name: "Jones, Mike")
+      assert_equal "Jones, Mike", mike.name
+      assert_equal "mike.jones@gmail.com", mike.email_address
+      assert_nil mike.phone_number
+      assert_equal "Son of a Jones", mike.description
+      assert_nil mike.priority
+      
+      peter_griffin = ::V1::Contact.find_by(name: "Pea Tear Gryphon")
+      assert_equal "Pea Tear Gryphon", peter_griffin.name
+      assert_nil peter_griffin.email_address
+      assert_nil peter_griffin.phone_number
+      assert_nil peter_griffin.description
+      assert_nil peter_griffin.priority
+    end
+
+    test "import csv should not delimit on commas contained within quotes" do
+      f = Tempfile.new("spreadsheet")
+
+      f.write(@contacts_csv)
+      file_import = FileImport.new
+      file_import.stubs(:filename).returns("#{f.path}.csv")
+      f.close
+      file_import.send(:import_spreadsheet, f, ::V1::Contact)
+      f.unlink
+            
+      fred = ::V1::Contact.find_by(name: "Jones, Fred")
+      assert_equal "Jones, Fred", fred.name
+      assert_equal "fred.jones@gmail.com", fred.email_address
+      assert_equal "(877) 241-LUNA", fred.phone_number
+      assert_equal "Jonesie, you're my hero!", fred.description
+      assert_equal 1, fred.priority
+    end
+
     test "import csv spreadsheet" do
       ::V1::Outage.any_instance.expects(:save!).times(2)
       
