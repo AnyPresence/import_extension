@@ -182,8 +182,12 @@ module ImporterExtension
     # This is done by setting the callback methods to an empty method on the eigenclass
     # so that it only affects the instance.
     def save_object_without_callbacks(obj)
-      # ActiveRecord ORM should respond to this
-      if obj.class.respond_to?(:skip_callback)        
+
+      if obj.class.respond_to?(:skip_callback)   
+        # ActiveRecord ORM should respond to this, but not we'll define on an empty method
+        # on the eigenclass instead for thread-safety reasons. Another thread may
+        # make use of the callback on the class.
+             
         # Find callbacks
         ["save", "create", "update"].each do |callback_type|
           callbacks = obj.class.send("_#{callback_type}_callbacks").select{|callback| callback.kind.eql?(:after) }
@@ -195,7 +199,8 @@ module ImporterExtension
         end
       end
       
-      # Finally save the object. For Datamapper, +save!+ will skip callbacks.
+      # Finally save the object. For Datamapper, +save!+ will skip callbacks so there's no extra work
+      # to do with the eigenclass.
       obj.save!
     end
   end
