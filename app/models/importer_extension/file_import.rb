@@ -11,6 +11,7 @@ module ImporterExtension
     
     EXTENSION_REGEX = /__.*_perform/
     HEADER_ROW_START = 1
+    MAX_REPORTED_FAILURE_COUNT = 10
 
     attr_accessible :file_type, :filename, :name, :failure_message, :finished, :failed
 
@@ -23,8 +24,10 @@ module ImporterExtension
     field :failed, type: Boolean, default: false
     field :failure_message, type: String
     field :total, type: Integer
+    field :failed_record_count, type: Integer, default: 0
     
     embeds_many :imported_objects, :class_name => "ImporterExtension::ImportedObject"
+    embeds_many :failed_records, :class_name => "ImporterExtension::FileImportRecordError"
     
     SPREADSHEET_FILE_EXTS = [".csv", ".xls", ".xlsx"]
     XML_FILE_EXTS = [".xml"]
@@ -130,6 +133,8 @@ module ImporterExtension
           save_object_without_callbacks(obj)
         rescue
           Rails.logger.error("Not able to save: #{obj.inspect}, error: #{$!.message}")
+          self.failed_record_count += 1
+          self.failed_records << ImporterExtension::FileImportRecordError.new(row, obj.errors, { record_number: i-1 } ) unless self.failed_record_count > MAX_REPORTED_FAILURE_COUNT
         end
         count += 1
         self.processed = count
@@ -138,6 +143,7 @@ module ImporterExtension
           self.imported_objects << ::ImporterExtension::ImportedObject.new(imported_object_definition_id: obj.id)
         end
       end
+      
       save
     end
     
@@ -164,6 +170,8 @@ module ImporterExtension
             save_object_without_callbacks(obj)
           rescue
             Rails.logger.error("Not able to save: #{obj.inspect}, error: #{$!.message}")
+            self.failed_record_count += 1
+            self.failed_records << ImporterExtension::FileImportRecordError.new(attributes.values.first, obj.errors, { record_number: count+1 } ) unless self.failed_record_count > MAX_REPORTED_FAILURE_COUNT
           end
         end
         count += 1

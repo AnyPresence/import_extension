@@ -13,18 +13,26 @@
   %li
     = link_to 'Import Data', settings_path
     %span.divider /
-  %li.active Importing&hellip;
+  - if !(@file_import.finished || @file_import.failed)
+    %li.active Importing&hellip;
+  - else
+    %li.active Import Complete
 
-- if @file_import.finished
-  .alert Finished!
+- if @file_import.finished && @file_import.failed_record_count > 0
+  .alert= "Finished! #{@file_import.failed_record_count} records could not be imported.  See below for errors."
+- elsif @file_import.finished && @file_import.failed_record_count == 0
+  .alert.alert-success Finished!
 - elsif @file_import.failed
-  .alert= "Import failed: #{@file_import.failure_message}"
+  .alert.alert-error= "Import failed: #{@file_import.failure_message}"
     
 .page-header
-  %h1 Importing&hellip;
+  - if !(@file_import.finished || @file_import.failed)
+    %h1 Importing&hellip;
+  - else
+    %h1 Import Complete
   .row-fluid
     .span4
-      .progress.progress-striped.active
+      .progress.progress-striped{:class => !(@file_import.finished || @file_import.failed) && "active"}
         - if @file_import.total == 0
           .bar{style: "width: 100%;"}
         - else
@@ -37,3 +45,33 @@
   
 - if !(@file_import.finished || @file_import.failed)
   .alert= "This page will refresh automatically in 5 seconds."
+
+- if (@file_import.finished && @file_import.failed_record_count > 0)
+  %p
+    %strong= "#{@file_import.failed_record_count} records failed to import"
+    - if (@file_import.failed_record_count > @file_import.failed_records.size)
+      %br
+      = "Showing first #{@file_import.failed_records.size} failed records"
+  #error-list.accordion
+    - @file_import.failed_records.each_with_index do |error, idx|
+      .accordion-group
+        .accordion-heading
+          %a{ :class => "accordion-toggle", :"data-toggle" => "collapse", :"data-parent" => "#error-list", :"href" => "#collapse#{idx}"}
+            = "Record #{error.record_number}"
+        %div{ :class => ["accordion-body", "collapse"], :id => "collapse#{idx}"}
+          .accordion-inner
+            %table.table.table-bordered.table-condensed
+              %thead
+                %tr
+                  %th Field Name
+                  %th Data
+                  %th Error(s)
+              %tbody
+                - error.data.each do |data|
+                  %tr{ :class => ("error" unless data.error_summary.blank?) }
+                    %td= "#{data.field_name}"
+                    %td
+                      = "#{data.field_value}"
+                    %td
+                      - if data.record_errors                        
+                        #{data.error_summary}
