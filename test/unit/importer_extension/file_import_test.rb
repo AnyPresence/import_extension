@@ -182,11 +182,19 @@ XML
       f.unlink
     end
     
+    test "save with callbacks" do
+      outage = ::V1::Outage.new
+      outage.expects(:__sms_on_save_perform).once
+      file_import = FileImport.new
+      options = { run_callbacks: true }
+      file_import.send(:save_object, outage, options)
+    end
+    
     test "save without callbacks" do 
       outage = ::V1::Outage.new
       outage.expects(:__sms_on_save_perform).never
       file_import = FileImport.new
-      file_import.send(:save_object_without_callbacks, outage)
+      file_import.send(:save_object, outage)
     end
     
     test "import xml file" do      

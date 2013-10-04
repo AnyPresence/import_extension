@@ -46,7 +46,10 @@
             .tab-content
               .tab-pane.active#local-spreadsheet= render partial: 'local_spreadsheet'
               .tab-pane#local-xml= render partial: 'xml'
-              .tab-pane#google-spreadsheet= render partial: 'google_spreadsheet'
+              .tab-pane#google-spreadsheet= render partial: 'google_spreadsheet'  
+            %label.checkbox
+              = check_box_tag "run_callbacks"
+              Run object lifecycle callbacks
     .span4
       .well
         %h4 Import To

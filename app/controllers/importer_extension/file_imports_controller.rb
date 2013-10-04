@@ -32,6 +32,9 @@ module ImporterExtension
       klazz = "#{::AP::ImporterExtension::Importer::Config.instance.latest_version.upcase}::#{klazz_name}".constantize
       
       options = {}
+      
+      options[:run_callbacks] = params[:run_callbacks] ? true : false
+      
       selected_import_type = params[:selected_import_type]
       case selected_import_type
       when "Google Spreadsheet"
