@@ -15,6 +15,8 @@ class V1::Contact
   field :description, type: String
   field :priority, type: Integer
   
+  validates_presence_of :name
+  
   def __sms_on_save_perform
     p "Sending fake sms!"
   end
