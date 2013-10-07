@@ -11,6 +11,7 @@ module ImporterExtension
     
     EXTENSION_REGEX = /__.*_perform/
     HEADER_ROW_START = 1
+    MAX_REPORTED_FAILURE_COUNT = 10
 
     attr_accessible :file_type, :filename, :name, :failure_message, :finished, :failed
 
@@ -23,8 +24,10 @@ module ImporterExtension
     field :failed, type: Boolean, default: false
     field :failure_message, type: String
     field :total, type: Integer
+    field :failed_record_count, type: Integer, default: 0
     
     embeds_many :imported_objects, :class_name => "ImporterExtension::ImportedObject"
+    embeds_many :failed_records, :class_name => "ImporterExtension::FileImportRecordError"
     
     SPREADSHEET_FILE_EXTS = [".csv", ".xls", ".xlsx"]
     XML_FILE_EXTS = [".xml"]
@@ -105,7 +108,7 @@ module ImporterExtension
       Rails.logger.info "Importing regular file"
     end
     
-    def import_spreadsheet(file, klazz, options={})
+    def import_spreadsheet(file, klazz, options={})      
       if options[:is_google_spreadsheet]
         ENV["GOOGLE_MAIL"] = options[:google_email]
         ENV["GOOGLE_PASSWORD"] = options[:google_password]
@@ -127,9 +130,11 @@ module ImporterExtension
         obj = klazz.new if obj.blank?
         obj.assign_attributes(row.to_hash.slice(*klazz.accessible_attributes(:"System Admin")), :as => :"System Admin")
         begin
-          save_object_without_callbacks(obj)
+          save_object(obj, options[:run_callbacks])
         rescue
           Rails.logger.error("Not able to save: #{obj.inspect}, error: #{$!.message}")
+          self.failed_record_count += 1
+          self.failed_records << ImporterExtension::FileImportRecordError.new(row, obj.errors, { record_number: i-1 } ) unless self.failed_record_count > MAX_REPORTED_FAILURE_COUNT
         end
         count += 1
         self.processed = count
@@ -138,6 +143,7 @@ module ImporterExtension
           self.imported_objects << ::ImporterExtension::ImportedObject.new(imported_object_definition_id: obj.id)
         end
       end
+      
       save
     end
     
@@ -161,9 +167,11 @@ module ImporterExtension
           obj = klazz.new if obj.blank?
           obj.assign_attributes(attributes.values.first.slice(*klazz.accessible_attributes(:"System Admin")), :as => :"System Admin")
           begin
-            save_object_without_callbacks(obj)
+            save_object(obj, options[:run_callbacks])
           rescue
             Rails.logger.error("Not able to save: #{obj.inspect}, error: #{$!.message}")
+            self.failed_record_count += 1
+            self.failed_records << ImporterExtension::FileImportRecordError.new(attributes.values.first, obj.errors, { record_number: count+1 } ) unless self.failed_record_count > MAX_REPORTED_FAILURE_COUNT
           end
         end
         count += 1
@@ -181,27 +189,33 @@ module ImporterExtension
     #
     # This is done by setting the callback methods to an empty method on the eigenclass
     # so that it only affects the instance.
-    def save_object_without_callbacks(obj)
+    def save_object(obj, run_callbacks=false)
+      
+      if !run_callbacks
 
-      if obj.class.respond_to?(:skip_callback)   
-        # ActiveRecord ORM should respond to this, but not we'll define on an empty method
-        # on the eigenclass instead for thread-safety reasons. Another thread may
-        # make use of the callback on the class.
+        if obj.class.respond_to?(:skip_callback)   
+          # ActiveRecord ORM should respond to this, but not we'll define on an empty method
+          # on the eigenclass instead for thread-safety reasons. Another thread may
+          # make use of the callback on the class.
              
-        # Find callbacks
-        ["save", "create", "update"].each do |callback_type|
-          callbacks = obj.class.send("_#{callback_type}_callbacks").select{|callback| callback.kind.eql?(:after) }
-          callbacks.each do |callback|
-            next unless callback.filter.to_s.match(EXTENSION_REGEX)
-            Rails.logger.debug "Skip callback: #{callback.filter}"
-            obj.define_singleton_method(callback.filter) { p "callback disabled..."}
+          # Find callbacks
+          ["save", "create", "update"].each do |callback_type|
+            callbacks = obj.class.send("_#{callback_type}_callbacks").select{|callback| callback.kind.eql?(:after) }
+            callbacks.each do |callback|
+              next unless callback.filter.to_s.match(EXTENSION_REGEX)
+              Rails.logger.debug "Skip callback: #{callback.filter}"
+              obj.define_singleton_method(callback.filter) { p "callback disabled..."}
+            end
           end
         end
-      end
       
-      # Finally save the object. For Datamapper, +save!+ will skip callbacks so there's no extra work
-      # to do with the eigenclass.
-      obj.save!
+        # Finally save the object. For Datamapper, +save!+ will skip callbacks so there's no extra work
+        # to do with the eigenclass.
+        obj.save!
+      else
+        p "callbacks enabled!"
+        obj.save!
+      end
     end
   end
 end

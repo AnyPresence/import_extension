@@ -13,6 +13,83 @@ name,email_address,phone_number,description,priority
 "Pea Tear Gryphon",,,,
 ,,,,
 CSV
+
+      @invalid_contacts_csv = <<CSV
+name,email_address,phone_number,description,priority
+"Jones, Fred","fred.jones@gmail.com",(877) 241-LUNA,"Jonesie, you're my hero!",1
+,"mike.jones@gmail.com",,Son of a Jones,
+"Pea Tear Gryphon",,,,
+CSV
+
+      @invalid_contacts_xml = <<XML
+<?xml version="1.0" encoding="UTF-8"?>      
+<contacts>
+  <contact>
+    <name>Jones, Fred</name>
+    <email_address>fred.jones@gmail.com</email_address>
+    <phone_number>(877) 241-LUNA</phone_number>
+    <description>Jonesie, you're my hero!</description>
+    <priority>1</priority>
+  </contact>
+  <contact>
+    <email_address>mike.jones@gmail.com</email_address>
+    <description>Son of a Jones</description>
+  </contact>
+  <contact>
+    <name>Pea Tear Gryphon</name>
+  </contact>
+</contacts>
+XML
+
+    end
+    
+    test "import invalid field data from XML" do
+      f = Tempfile.new("tempxml")
+
+      f.write(@invalid_contacts_xml)
+      file_import = FileImport.new
+      file_import.stubs(:filename).returns("#{f.path}.xml")
+      f.rewind
+      file_import.send(:import_xml, f, ::V1::Contact, {:css_selector => "contact"})
+      f.close
+      f.unlink
+      
+      assert_equal 1, file_import.failed_record_count
+      failed_record = file_import.failed_records.first
+      assert_equal 3, failed_record.data.size
+      data = failed_record.data.where(field_name: "name").first
+      assert_equal "name", data.field_name
+      assert data.field_value.blank?
+      assert_equal 1, data.record_errors.size
+      error = data.record_errors.first
+      assert_equal error.field_name, "name"
+      assert_equal "can't be blank", error.error_description
+      
+      assert_equal 2, ::V1::Contact.all.size
+    end
+    
+    test "import invalid field data from CSV" do
+      f = Tempfile.new("spreadsheet")
+
+      f.write(@invalid_contacts_csv)
+      file_import = FileImport.new
+      file_import.stubs(:filename).returns("#{f.path}.csv")
+      f.close
+      file_import.send(:import_spreadsheet, f, ::V1::Contact)
+      f.unlink
+      
+      assert_equal 1, file_import.failed_record_count
+      failed_record = file_import.failed_records.first
+      assert_equal 5, failed_record.data.size
+      data = failed_record.data.where(field_name: "name").first
+      assert_equal "name", data.field_name
+      assert data.field_value.blank?
+      assert_equal 1, data.record_errors.size
+      error = data.record_errors.first
+      assert_equal error.field_name, "name"
+      assert_equal "can't be blank", error.error_description
+      
+      assert_equal 2, ::V1::Contact.all.size
     end
   
     test "import xls spreadsheet" do
@@ -105,11 +182,19 @@ CSV
       f.unlink
     end
     
+    test "save with callbacks" do
+      outage = ::V1::Outage.new
+      outage.expects(:__sms_on_save_perform).once
+      file_import = FileImport.new
+      options = { run_callbacks: true }
+      file_import.send(:save_object, outage, options)
+    end
+    
     test "save without callbacks" do 
       outage = ::V1::Outage.new
       outage.expects(:__sms_on_save_perform).never
       file_import = FileImport.new
-      file_import.send(:save_object_without_callbacks, outage)
+      file_import.send(:save_object, outage)
     end
     
     test "import xml file" do      
