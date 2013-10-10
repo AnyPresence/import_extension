@@ -185,9 +185,9 @@ module ImporterExtension
       save
     end
     
-    # Saves the object without hitting extension callbacks.
+    # Saves the object
     #
-    # This is done by setting the callback methods to an empty method on the eigenclass
+    # For cases where we don't want to hit callbacks, this is done by setting the callback methods to an empty method on the eigenclass
     # so that it only affects the instance.
     def save_object(obj, run_callbacks=false)
       
@@ -200,6 +200,7 @@ module ImporterExtension
              
           # Find callbacks
           ["save", "create", "update"].each do |callback_type|
+            puts ":::: Checking callback_type #{callback_type}"
             callbacks = obj.class.send("_#{callback_type}_callbacks").select{|callback| callback.kind.eql?(:after) }
             callbacks.each do |callback|
               next unless callback.filter.to_s.match(EXTENSION_REGEX)
@@ -207,14 +208,26 @@ module ImporterExtension
               obj.define_singleton_method(callback.filter) { p "callback disabled..."}
             end
           end
+        else
+          puts ":::: Object doesn't respond to :skip_callback!"
         end
-      
+        
         # Finally save the object. For Datamapper, +save!+ will skip callbacks so there's no extra work
         # to do with the eigenclass.
         obj.save!
       else
         p "callbacks enabled!"
-        obj.save!
+        begin
+          # Use Datamapper's non-bang method for saving with callbacks
+          if obj.is_a? ::DataMapper::Resource
+            obj.save
+          else
+            obj.save!
+          end
+        rescue NameError => e
+          # NameError would mean that ::DataMapper::Resource wasn't found in the ruby load path.  Follow same logic as else block above
+          obj.save!
+        end
       end
     end
   end
