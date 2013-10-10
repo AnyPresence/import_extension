@@ -200,7 +200,6 @@ module ImporterExtension
              
           # Find callbacks
           ["save", "create", "update"].each do |callback_type|
-            puts ":::: Checking callback_type #{callback_type}"
             callbacks = obj.class.send("_#{callback_type}_callbacks").select{|callback| callback.kind.eql?(:after) }
             callbacks.each do |callback|
               next unless callback.filter.to_s.match(EXTENSION_REGEX)
@@ -208,15 +207,13 @@ module ImporterExtension
               obj.define_singleton_method(callback.filter) { p "callback disabled..."}
             end
           end
-        else
-          puts ":::: Object doesn't respond to :skip_callback!"
         end
         
         # Finally save the object. For Datamapper, +save!+ will skip callbacks so there's no extra work
         # to do with the eigenclass.
         obj.save!
       else
-        p "callbacks enabled!"
+        Rails.logger.debug "Callbacks enabled for #{obj}"
         begin
           # Use Datamapper's non-bang method for saving with callbacks
           if obj.is_a? ::DataMapper::Resource
