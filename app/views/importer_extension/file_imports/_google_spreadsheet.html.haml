@@ -1,9 +1,9 @@
-.control-group
+.form-group
   = label_tag 'Google Spreadsheet Key'
-  .controls= text_field_tag "google_spreadsheet_key"
-.control-group
+  = text_field_tag "google_spreadsheet_key", '', class: 'form-control'
+.form-group
   = label_tag 'Username'
-  .controls= text_field_tag "google_email"
-.control-group
+  = text_field_tag "google_email", '', class: 'form-control'
+.form-group
   = label_tag 'Password'
-  .controls= password_field_tag "google_password"
+  = password_field_tag "google_password", '', class: 'form-control'

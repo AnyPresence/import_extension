@@ -3,13 +3,13 @@
 %ul.breadcrumb
   %li
     = link_to 'Home', main_app.admin_root_path
-    %span.divider /
+    
   %li 
     = link_to 'Extensions', main_app.admin_extensions_path
-    %span.divider /
+    
   %li.active Import Data
 
-.alert.alert-info.clearfix
+.page-header
   %h1 Import Data
   %p Import data into your application from a source file or remote location.
 
@@ -26,13 +26,13 @@
 
 
 = form_tag import_file_imports_path, multipart: true, onsubmit: "return !$('#run_callbacks')[0].checked || ($('#run_callbacks')[0].checked && confirm('Are you sure you want to run object lifecycle callbacks?'));" do
-  .row-fluid
-    .span8
+  .row
+    .col-md-8
       .well
         %h4 Import From
         %p.muted Select a file or remote service from which to import data.
-        .row-fluid
-          .span4
+        .row
+          .col-md-4
             %ul.import-type-nav.nav.nav-pills.nav-stacked
               %li.active
                 %a{href: '#local-spreadsheet', data: {toggle: 'tab', type: 'Local Spreadsheet', file_upload: true}} Local Spreadsheet
@@ -40,9 +40,10 @@
                 %a{href: '#local-xml', data: {toggle: 'tab', type: 'XML', file_upload: true}} Local XML
               %li
                 %a{href: '#google-spreadsheet', data: {toggle: 'tab', type: 'Google Spreadsheet'}} Google Spreadsheet
-          .span7.offset1
+          .col-md-7.col-md-offset-1
             .file-upload
-              .well.well-small= file_field_tag :file
+              = file_field_tag :file, class: 'form-control'
+              %br
             .tab-content
               .tab-pane.active#local-spreadsheet= render partial: 'local_spreadsheet'
               .tab-pane#local-xml= render partial: 'xml'
@@ -50,7 +51,7 @@
             %label.checkbox
               = check_box_tag "run_callbacks"
               Run object lifecycle callbacks
-    .span4
+    .col-md-4
       .well
         %h4 Import To
         %p.muted Select a destination object to which to save imported data.

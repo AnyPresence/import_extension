@@ -6,13 +6,13 @@
 %ul.breadcrumb
   %li
     = link_to 'Home', main_app.admin_root_path
-    %span.divider /
+    
   %li
     = link_to 'Extensions', main_app.admin_extensions_path
-    %span.divider /
+    
   %li
     = link_to 'Import Data', settings_path
-    %span.divider /
+    
   - if !(@file_import.finished || @file_import.failed)
     %li.active Importing&hellip;
   - else
