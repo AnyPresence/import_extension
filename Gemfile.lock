@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    importer_extension (0.0.9)
+    importer_extension (0.1.1)
       google-spreadsheet-ruby (= 0.3.1)
       iconv (~> 1.0.3)
       mongoid (~> 3.1)
