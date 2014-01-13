@@ -1,18 +1,18 @@
 - if !(@file_import.finished || @file_import.failed)
   %meta{:content => "5", "http-equiv" => "refresh"}
-  
+
 
 
 %ul.breadcrumb
   %li
     = link_to 'Home', main_app.admin_root_path
-    
+
   %li
     = link_to 'Extensions', main_app.admin_extensions_path
-    
+
   %li
     = link_to 'Import Data', settings_path
-    
+
   - if !(@file_import.finished || @file_import.failed)
     %li.active Importing&hellip;
   - else
@@ -24,25 +24,26 @@
   .alert.alert-success Finished!
 - elsif @file_import.failed
   .alert.alert-error= "Import failed: #{@file_import.failure_message}"
-    
+
 .page-header
   - if !(@file_import.finished || @file_import.failed)
     %h1 Importing&hellip;
   - else
     %h1 Import Complete
   .row-fluid
+
     .span4
       .progress.progress-striped{:class => !(@file_import.finished || @file_import.failed) && "active"}
         - if @file_import.total == 0
-          .bar{style: "width: 100%;"}
+          .progress-bar{style: "width: 100%;"}
         - else
-          .bar{style: "width: #{(@file_import.processed.to_f/@file_import.total.to_f)*100 + 1}%;"}
+          .progress-bar{style: "width: #{(@file_import.processed.to_f/@file_import.total.to_f)*100 + 1}%;"}
     .span8
-      %span.label #{@file_import.processed.to_i}
+      %span.label.label-info #{@file_import.processed.to_i}
       of
       %span.label.label-info #{@file_import.total.to_i}
       processed
-  
+
 - if !(@file_import.finished || @file_import.failed)
   .alert= "This page will refresh automatically in 5 seconds."
 
@@ -73,5 +74,5 @@
                     %td
                       = "#{data.field_value}"
                     %td
-                      - if data.record_errors                        
+                      - if data.record_errors
                         #{data.error_summary}
